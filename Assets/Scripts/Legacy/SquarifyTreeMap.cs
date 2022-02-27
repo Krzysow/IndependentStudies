@@ -86,7 +86,7 @@ public class SquarifyTreeMap
 
         foreach (var rect in GetRectangles(area))
         {
-            // Make sure no rectangle go outside the original area
+            // Make sure no rectangle goes outside the original area
             if (rect.X + rect.Width > area.Width) rect.Width = area.Width - rect.X;
             if (rect.Y + rect.Height > area.Height) rect.Height = area.Height - rect.Y;
 
