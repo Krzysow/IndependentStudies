@@ -87,23 +87,23 @@ public class DrawWalls : MonoBehaviour
     void GenerateTreeMap()
     {
         List<TreemapItem> map = new List<TreemapItem>();
-        map.Add(new TreemapItem("LivingRoom", 700));
+        map.Add(new TreemapItem("living room", 700));
         
         List<TreemapItem> sideArea = new List<TreemapItem>();
         if (Menu._difficulty > 1)
-            sideArea.Add(new TreemapItem("MasterBathroom", 50));
+            sideArea.Add(new TreemapItem("master bathroom", 50));
         if (Menu._difficulty > 2)
-            sideArea.Add(new TreemapItem("MasterBathroom2", 50));
+            sideArea.Add(new TreemapItem("second master bathroom", 50));
 
         List<TreemapItem> masterBedroom = new List<TreemapItem>();
-        masterBedroom.Add(new TreemapItem("Bedroom", 400));
+        masterBedroom.Add(new TreemapItem("bedroom", 400));
         if (sideArea.Count > 0)
         {
-            TreemapItem sideAreaItem = new TreemapItem("SideRooms", sideArea);
+            TreemapItem sideAreaItem = new TreemapItem("side rooms", sideArea);
             masterBedroom.Add(sideAreaItem);
         }
 
-        map.Add(new TreemapItem("MasterBedroom", masterBedroom));
+        map.Add(new TreemapItem("master bedroom", masterBedroom));
 
         //var map = new[]
         //{
