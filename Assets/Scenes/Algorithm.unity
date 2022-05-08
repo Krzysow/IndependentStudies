@@ -312,7 +312,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4c273ef18dd2e4c4fa3c9381b0fb11d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mat: {fileID: 10306, guid: 0000000000000000f000000000000000, type: 0}
-  pairsOfWalls:
-  - {x: 0.05, y: 0.05}
   room: {fileID: 642652779799774708, guid: c8f274aeaacc36346a8de2f97f7ca228, type: 3}
+  door: {fileID: 3054256016611996279, guid: fd7c6dba70f089140af6f5199e1d56a3, type: 3}

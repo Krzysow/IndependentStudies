@@ -6,13 +6,18 @@ using UnityEngine.UI;
 
 public class Treemap
 {
-    public void Build(TreemapItem[] items, float width, float height, GameObject gameObject)
+    GameObject door;
+
+    public void Build(TreemapItem[] items, float width, float height, GameObject gameObject, GameObject doorGM)
     {
+        door = doorGM;
+
         var map = BuildMultidimensional(items, width, height, 0, 0);
         //var bmp = new Bitmap(width, height);
 
         //var g = Graphics.FromImage(bmp);
         //g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
+        HierarchyTreemap hierarchyNode = Camera.main.GetComponent<DrawWalls>().hierarchy;
         foreach (var kv in map)
         {
             var item = kv.Key;
@@ -22,7 +27,13 @@ public class Treemap
             treeObject.transform.position = new Vector3(rect.x + rect.width * 0.5f, 0f, rect.y + rect.height * 0.5f);
             treeObject.transform.localScale = new Vector3(rect.width, 1f, rect.height);
             treeObject.transform.GetChild(0).gameObject.GetComponent<MeshRenderer>().material.color = Random.ColorHSV();
-            treeObject.transform.Find("Canvas").Find("Text").GetComponent<Text>().text = kv.Key.Label.ToString();
+            string roomName = kv.Key.Label.ToString();
+            treeObject.transform.Find("Canvas").Find("Text").GetComponent<Text>().text = roomName;
+
+            HierarchyTreemap currentNode = hierarchyNode.Find(roomName);
+            currentNode.Rect = rect;
+            currentNode.GameObject = treeObject;
+
             //g.FillRectangle(item.FillBrush, rect);
             // draw border
             //g.DrawRectangle(new Pen(item.BorderBrush, 1), rect);
@@ -37,6 +48,68 @@ public class Treemap
             //}
         }
         //return bmp;
+        Adjust(hierarchyNode);
+    }
+
+    void Adjust(HierarchyTreemap node)
+    {
+        if (node.Children != null)
+        {
+            foreach (HierarchyTreemap child in node.Children)
+            {
+                Rect parentRect = node.Rect;
+                Rect childRect = child.Rect;
+
+                // check if rooms are adjacent
+                if (parentRect.x <= childRect.x + childRect.width && parentRect.x + parentRect.width >= childRect.x
+                    && parentRect.y <= childRect.y + childRect.height && parentRect.y + parentRect.height >= childRect.y)
+                {
+                    PlaceDoor(node, child);
+                }
+                else // move it if not
+                {
+
+                }
+
+                Adjust(child);
+            }
+        }
+    }
+
+    void PlaceDoor(HierarchyTreemap parentRoom, HierarchyTreemap childRoom)
+    {
+        Vector3 parentCenter = new Vector3(parentRoom.Rect.x + parentRoom.Rect.width * .5f, 0, parentRoom.Rect.y + parentRoom.Rect.height * .5f);
+        Vector3 childCenter = new Vector3(childRoom.Rect.x + childRoom.Rect.width * .5f, 0, childRoom.Rect.y + childRoom.Rect.height * .5f);
+
+        Vector3 offset = Vector3.zero;
+        Quaternion rotation = Quaternion.identity;
+
+        if (Mathf.Abs(childCenter.x - parentCenter.x) > Mathf.Abs(childCenter.z - parentCenter.z))
+        {
+            if (childCenter.x < parentCenter.x)
+                offset = Vector3.right * childRoom.Rect.width * .5f;
+            else
+                offset = Vector3.left * childRoom.Rect.width * .5f;
+
+            offset += new Vector3(0, 0, (parentCenter.z - childCenter.z) * .5f);
+            rotation.eulerAngles = new Vector3(0, 90, 0);
+        }
+        else
+        {
+            if (childCenter.z < parentCenter.z)
+            {
+                offset = Vector3.forward * childRoom.Rect.height * .5f;
+            }
+            else
+                offset = Vector3.back * childRoom.Rect.height * .5f;
+
+            offset += new Vector3((parentCenter.x - childCenter.x) * .5f, 0, 0);
+
+        }
+
+        Vector3 position = childCenter + offset;
+
+        GameObject.Instantiate(door, position, rotation);
     }
 
     private Dictionary<TreemapItem, Rect> BuildMultidimensional(TreemapItem[] items, float width, float height, float x, float y)
