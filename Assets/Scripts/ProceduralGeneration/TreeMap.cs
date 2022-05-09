@@ -4,6 +4,8 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
+public enum Direction { up, down, left, right }
+
 public class Treemap
 {
     GameObject door;
@@ -61,14 +63,66 @@ public class Treemap
                 Rect childRect = child.Rect;
 
                 // check if rooms are adjacent
-                if (parentRect.x <= childRect.x + childRect.width && parentRect.x + parentRect.width >= childRect.x
-                    && parentRect.y <= childRect.y + childRect.height && parentRect.y + parentRect.height >= childRect.y)
+                if (node.GameObject.transform.position.x - parentRect.height * 0.5f - 1 <= child.GameObject.transform.position.x + childRect.width * .5f + 1
+                    && node.GameObject.transform.position.x + parentRect.width * .5f + 1 >= child.GameObject.transform.position.x - childRect.width * .5f - 1
+                    && node.GameObject.transform.position.z - parentRect.height * .5f - 1 <= child.GameObject.transform.position.z + childRect.height * .5f + 1
+                    && node.GameObject.transform.position.z + parentRect.height * .5f + 1 >= child.GameObject.transform.position.z - childRect.height * .5f - 1)
                 {
                     PlaceDoor(node, child);
                 }
                 else // move it if not
                 {
+                    Vector3 newPosition = node.GameObject.transform.position;
 
+                    if (childRect.width > childRect.height)
+                    {
+                        if (TestSpace(node, childRect, Direction.up))
+                        {
+                            newPosition += Vector3.forward * (node.GameObject.transform.lossyScale.z * .5f + child.GameObject.transform.lossyScale.z * .5f);
+                        }
+                        else if (TestSpace(node, childRect, Direction.down))
+                        {
+                            newPosition += Vector3.back * (node.GameObject.transform.lossyScale.z * .5f + child.GameObject.transform.lossyScale.z * .5f);
+                        }
+                        else if (TestSpace(node, childRect, Direction.left))
+                        {
+                            newPosition += Vector3.left * (node.GameObject.transform.lossyScale.x * .5f + child.GameObject.transform.lossyScale.x * .5f);
+                        }
+                        else if (TestSpace(node, childRect, Direction.right))
+                        {
+                            newPosition += Vector3.right * (node.GameObject.transform.lossyScale.x * .5f + child.GameObject.transform.lossyScale.x * .5f);
+                        }
+                        else
+                        {
+                            newPosition = child.GameObject.transform.position;
+                        }
+                    }
+                    else
+                    {
+                        if (TestSpace(node, childRect, Direction.left))
+                        {
+                            newPosition += Vector3.left * (node.GameObject.transform.lossyScale.x * .5f + child.GameObject.transform.lossyScale.x * .5f);
+                        }
+                        else if (TestSpace(node, childRect, Direction.right))
+                        {
+                            newPosition += Vector3.right * (node.GameObject.transform.lossyScale.x * .5f + child.GameObject.transform.lossyScale.x * .5f);
+                        }
+                        else if (TestSpace(node, childRect, Direction.up))
+                        {
+                            newPosition += Vector3.forward * (node.GameObject.transform.lossyScale.z * .5f + child.GameObject.transform.lossyScale.z * .5f);
+                        }
+                        else if (TestSpace(node, childRect, Direction.down))
+                        {
+                            newPosition += Vector3.back * (node.GameObject.transform.lossyScale.z * .5f + child.GameObject.transform.lossyScale.z * .5f);
+                        }
+                        else
+                        {
+                            newPosition = child.GameObject.transform.position;
+                        }
+                    }
+
+                    child.GameObject.transform.position = newPosition;
+                    PlaceDoor(node, child);
                 }
 
                 Adjust(child);
@@ -78,8 +132,8 @@ public class Treemap
 
     void PlaceDoor(HierarchyTreemap parentRoom, HierarchyTreemap childRoom)
     {
-        Vector3 parentCenter = new Vector3(parentRoom.Rect.x + parentRoom.Rect.width * .5f, 0, parentRoom.Rect.y + parentRoom.Rect.height * .5f);
-        Vector3 childCenter = new Vector3(childRoom.Rect.x + childRoom.Rect.width * .5f, 0, childRoom.Rect.y + childRoom.Rect.height * .5f);
+        Vector3 parentCenter = parentRoom.GameObject.transform.position;// new Vector3(parentRoom.GameObject.transform.position.x, 0, parentRoom.GameObject.transform.position.z + parentRoom.Rect.height * .5f);
+        Vector3 childCenter = childRoom.GameObject.transform.position; //new Vector3(childRoom.GameObject.transform.position.x, 0, childRoom.GameObject.transform.position.z + childRoom.Rect.height * .5f);
 
         Vector3 offset = Vector3.zero;
         Quaternion rotation = Quaternion.identity;
@@ -109,7 +163,57 @@ public class Treemap
 
         Vector3 position = childCenter + offset;
 
-        GameObject.Instantiate(door, position, rotation);
+        GameObject newDoor = GameObject.Instantiate(door, position, rotation);
+        parentRoom.Doors.Add(newDoor);
+        childRoom.Doors.Add(newDoor);
+    }
+
+    bool TestSpace(HierarchyTreemap parentNode, Rect roomToMove, Direction direction)
+    {
+        switch (direction)
+        {
+            case Direction.up:
+                foreach (GameObject door in parentNode.Doors)
+                {
+                    if (door.transform.rotation == Quaternion.identity)
+                    {
+                        if (parentNode.GameObject.transform.position.z < door.transform.position.z)
+                            return false;
+                    }
+                }
+                break;
+            case Direction.down:
+                foreach (GameObject door in parentNode.Doors)
+                {
+                    if (door.transform.rotation == Quaternion.identity)
+                    {
+                        if (parentNode.GameObject.transform.position.z > door.transform.position.z)
+                            return false;
+                    }
+                }
+                break;
+            case Direction.left:
+                foreach (GameObject door in parentNode.Doors)
+                {
+                    if (door.transform.rotation == Quaternion.Euler(new Vector3(0, 90, 0)))
+                    {
+                        if (parentNode.GameObject.transform.position.x > door.transform.position.x)
+                            return false;
+                    }
+                }
+                break;
+            case Direction.right:
+                foreach (GameObject door in parentNode.Doors)
+                {
+                    if (door.transform.rotation == Quaternion.Euler(new Vector3(0, 90, 0)))
+                    {
+                        if (parentNode.GameObject.transform.position.x < door.transform.position.x)
+                            return false;
+                    }
+                }
+                break;
+        }
+        return true;
     }
 
     private Dictionary<TreemapItem, Rect> BuildMultidimensional(TreemapItem[] items, float width, float height, float x, float y)

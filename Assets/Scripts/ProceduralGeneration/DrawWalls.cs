@@ -10,7 +10,7 @@ public class DrawWalls : MonoBehaviour
     public GameObject door;
     public HierarchyTreemap hierarchy;
 
-    float width, height, aspectRatio;
+    //float width, height, aspectRatio;
     //TreeNode<RoomData> roomTree = new TreeNode<RoomData>(new RoomData { room = Room.LivingRoom, roomSize = 10.0f});
 
     // Start is called before the first frame update
@@ -89,26 +89,27 @@ public class DrawWalls : MonoBehaviour
     void GenerateTreeMap()
     {
         List<TreemapItem> map = new List<TreemapItem>();
-        map.Add(new TreemapItem("living room", 700));
+        map.Add(new TreemapItem("living room", (int)(700 + 500 * Random.Range(0f, 1f))));
         hierarchy = new HierarchyTreemap("living room");
 
         HierarchyTreemap masterBedroomHierarchy = new HierarchyTreemap("bedroom");
         hierarchy.Children.Add(masterBedroomHierarchy);
 
         List<TreemapItem> sideArea = new List<TreemapItem>();
-        if (Menu._difficulty > 1)
+        float bathroomProbability = Random.Range(0f, 1f);
+        if (Menu._difficulty * bathroomProbability > .5f)
         {
-            sideArea.Add(new TreemapItem("master bathroom", 50));
+            sideArea.Add(new TreemapItem("master bathroom", (int)(40 + 60 * bathroomProbability)));
             masterBedroomHierarchy.Children.Add(new HierarchyTreemap("master bathroom"));
         }
-        if (Menu._difficulty > 2)
+        if (Menu._difficulty * bathroomProbability > .96f)
         {
-            sideArea.Add(new TreemapItem("second master bathroom", 50));
+            sideArea.Add(new TreemapItem("second master bathroom", (int)(40 + 60 * bathroomProbability)));
             masterBedroomHierarchy.Children.Add(new HierarchyTreemap("second master bathroom"));
         }
 
         List<TreemapItem> masterBedroom = new List<TreemapItem>();
-        masterBedroom.Add(new TreemapItem("bedroom", 400));
+        masterBedroom.Add(new TreemapItem("bedroom", (int)(500 + 200 * Random.Range(0f, 1f))));
         if (sideArea.Count > 0)
         {
             TreemapItem sideAreaItem = new TreemapItem("side rooms", sideArea);
@@ -118,19 +119,27 @@ public class DrawWalls : MonoBehaviour
         map.Add(new TreemapItem("master bedroom", masterBedroom));
 
         List<TreemapItem> kitchen = new List<TreemapItem>();
-        kitchen.Add(new TreemapItem("kitchen", 250));
+        kitchen.Add(new TreemapItem("kitchen", (int)(200 + 300 * Random.Range(0f, 1f))));
         HierarchyTreemap kitchenHierarchy = new HierarchyTreemap("kitchen");
         hierarchy.Children.Add(kitchenHierarchy);
-        if (Menu._difficulty > 2)
+        if (Menu._difficulty * Random.Range(0f, 1f) > 1.9f)
         {
-            kitchen.Add(new TreemapItem("pantry", 30));
+            kitchen.Add(new TreemapItem("pantry", (int)(35 + 50 * Random.Range(0f, 1f))));
             kitchenHierarchy.Children.Add(new HierarchyTreemap("pantry"));
         }
 
         map.Add(new TreemapItem("kitchen area", kitchen));
 
-        map.Add(new TreemapItem("main bathroom", 100));
+        map.Add(new TreemapItem("main bathroom", (int)(75 + 100 * Random.Range(0f, 1f))));
         hierarchy.Children.Add(new HierarchyTreemap("main bathroom"));
+
+        //if (Menu._difficulty * Random.Range(0f, 1f) > .9f)
+        //{
+        //    List<TreemapItem> secondBedroom = new List<TreemapItem>();
+        //    secondBedroom.Add(new TreemapItem("second bedroom", (int)(300 + 200 * Random.Range(0f, 1f))));
+        //    map.Add(new TreemapItem("second bedroom", secondBedroom));
+        //    hierarchy.Children.Add(new HierarchyTreemap("second bedroom"));
+        //}
 
         //var map = new[]
         //{
